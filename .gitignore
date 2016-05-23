@@ -1,0 +1,13 @@
+# idea
+.idea
+
+# Node
+node_modules
+npm-debug.log
+
+# logs
+logs
+
+# webdriver
+errorShots
+screenShots
