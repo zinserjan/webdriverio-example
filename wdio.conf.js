@@ -1,3 +1,19 @@
+var path = require('path');
+var VisualRegressionCompare = require('wdio-visual-regression-service/compare');
+
+
+function getScreenshotName(basePath) {
+  return function(context) {
+    var testName = context.test.title;
+    var resolution = context.meta.width || context.meta.orientation || 'unknown';
+    var browserVersion = parseInt(/\d+/.exec(context.browser.version)[0]);
+    var browserName = context.browser.name;
+
+    return path.join(basePath, `${testName}_${resolution}_${browserName}_v${browserVersion}.png`);
+  };
+}
+
+
 exports.config = {
 
   //
@@ -38,16 +54,23 @@ exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
-  capabilities: [{
-    // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-    // grid with only 5 firefox instance available you can make sure that not more than
-    // 5 instance gets started at a time.
-    // maxInstances: 4,
-    //
-    browserName: 'chrome',
-    // browserName: 'phantomjs',
-  //  'phantomjs.binary.path': require('phantomjs').path,
-  }],
+  capabilities: [
+    {
+      // maxInstances can get overwritten per capability. So if you have an in-house Selenium
+      // grid with only 5 firefox instance available you can make sure that not more than
+      // 5 instance gets started at a time.
+      // maxInstances: 4,
+      //
+      browserName: 'chrome',
+    },
+    {
+      browserName: 'firefox',
+    },
+    {
+      browserName: 'phantomjs',
+      'phantomjs.binary.path': require('phantomjs').path,
+    }
+  ],
   //
   // ===================
   // Test Configurations
@@ -98,8 +121,16 @@ exports.config = {
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
   services: [
-    'selenium-standalone'
+    'selenium-standalone',
+    'visual-regression'
   ],
+  visualRegression: {
+    compare: new VisualRegressionCompare.LocalCompare({
+      referenceName: getScreenshotName(path.join(process.cwd(), 'screenshots/reference')),
+      screenshotName: getScreenshotName(path.join(process.cwd(), 'screenshots/taken')),
+      diffName: getScreenshotName(path.join(process.cwd(), 'screenshots/diff')),
+    }),
+  },
   // Options for selenium-standalone
   // Path where all logs from the Selenium server should be stored.
   seleniumLogs: './logs/',
